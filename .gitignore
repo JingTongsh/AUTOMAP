@@ -1,3 +1,16 @@
 experiments/
 **/__pycache__/
 *.py[cod]
+
+.idea
+.vscode
+data*
+!data_loader
+full_3mm
+MRI
+*.png
+*temp*
+previous
+results*
+*mat
+korea.py

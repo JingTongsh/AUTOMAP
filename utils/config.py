@@ -20,8 +20,11 @@ def get_config_from_json(json_file):
 
 
 def process_config(json_file):
+    import time
     config, _ = get_config_from_json(json_file)
-    config.summary_dir = os.path.join("experiments", config.exp_name, "summary/")
-    config.checkpoint_dir = os.path.join("experiments", config.exp_name, "checkpoint/")
-    config.graph_file = os.path.join("experiments", config.exp_name, "checkpoint/","loss_training.p")
+    time_str = time.strftime("%Y%m%d-%H%M%S")
+    exp_dir = os.path.join("experiments", f"{config.exp_name}-{time_str}")
+    config.summary_dir = os.path.join(exp_dir, "summary/")
+    config.checkpoint_dir = os.path.join(exp_dir, "checkpoint/")
+    config.graph_file = os.path.join(exp_dir, "checkpoint/","loss_training.p")
     return config

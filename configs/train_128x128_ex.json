@@ -1,11 +1,11 @@
 {
-  "exp_name": "train",
+  "exp_name": "train128x128",
 
   "resume": 0,
   "loadmodel_dir": null,
 
   "num_epochs": 100,
-  "batch_size": 100,
+  "batch_size": 4,
 
   "fc_input_dim": 32768,
   "fc_hidden_dim": 16384,
@@ -14,11 +14,11 @@
   "im_h": 128,
   "im_w": 128,
   
-  "data_dir": "/hdd2/misc_hdd2/danyal_data128by128/",
-  "train_input": "train_fft_x_hcpD_fullcart_withphase_128x128.mat",
-  "train_output": "train_realx_hcpD_fullcart_withphase_128x128.mat",
-  "test_input": "test_fft_x_hcpD_fullcart_withphase_128x128.mat",
-  "test_output": "test_realx_hcpD_fullcart_withphase_128x128.mat",
+  "data_dir": "data_fft128/train",
+  "train_input": "x_input.mat",
+  "train_output": "x_real.mat",
+  "test_input": "../test/x_input.mat",
+  "test_output": "../test/x_real.mat",
 
   "learning_rate": 0.00002
   

@@ -1,0 +1,25 @@
+{
+    "exp_name": "train",
+  
+    "resume": 0,
+    "loadmodel_dir": null,
+  
+    "num_epochs": 100,
+    "batch_size": 100,
+  
+    "fc_input_dim": 131072,
+    "fc_hidden_dim": 65536,
+    "fc_output_dim": 65536,
+  
+    "im_h": 256,
+    "im_w": 256,
+    
+    "data_dir": "data_mri/train",
+    "train_input": "x_input.mat",
+    "train_output": "x_real.mat",
+    "test_input": "../test/x_input.mat",
+    "test_output": "../test/x_real.mat",
+  
+    "learning_rate": 0.00002
+    
+  }

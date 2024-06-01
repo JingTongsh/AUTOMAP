@@ -4,6 +4,7 @@ import tensorflow as tf
 import pickle
 import sys
 import os
+import tensorboard
 
 
 class AUTOMAP_Trainer:
@@ -17,6 +18,8 @@ class AUTOMAP_Trainer:
 
         self.train_loss = 0
         self.val_loss = 0
+        
+        self.writer = tf.summary.create_file_writer(self.config.summary_dir)
         
     def custom_loss(self,targets,predictions,c_2):
 
@@ -79,7 +82,8 @@ class AUTOMAP_Trainer:
         loss_training = np.zeros((2,self.config.num_epochs))
 
         optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.config.learning_rate)
-
+        
+        save_interval = 10 if self.config.num_epochs <= 200 else 50
         for epoch in range(self.config.num_epochs):
 
             pbar = tqdm.tqdm(total=self.data.len // self.config.batch_size, desc='Steps', position=0)
@@ -96,11 +100,16 @@ class AUTOMAP_Trainer:
             template = 'Epoch {}, Loss: {}, ValLoss: {}'
             print(template.format(epoch, self.train_loss, self.val_loss))
             
+            # write to tensorboard
+            with self.writer.as_default():
+                tf.summary.scalar('loss', self.train_loss, step=epoch)
+                tf.summary.scalar('val_loss', self.val_loss, step=epoch)
+            
             loss_training[0, epoch] = self.train_loss
             loss_training[1, epoch] = self.val_loss
-        self.model.save(self.config.checkpoint_dir)
-            # To save a different model/checkpoint at each epoch (will take up a lot more disk space!):
-            # self.model.save(os.path.join(self.config.checkpoint_dir,str(epoch)+'.h5'))
+            
+            if (epoch + 1) % save_interval == 0:
+                self.model.save(os.path.join(self.config.checkpoint_dir, str(epoch)+'.h5'))
 
         with open(self.config.graph_file, 'wb') as f:
             np.save(f, loss_training)

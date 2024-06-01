@@ -1,9 +1,23 @@
+import os
 import numpy as np
-import tensorflow as tf
+from scipy.io import loadmat
 import mat73
 
-import sys
-import os
+
+def load_mat(file):
+    try:
+        file = loadmat(file)
+    except:
+        file = mat73.loadmat(file)
+    keys = list(file.keys())
+    keys_useful = [key for key in keys if not key.startswith('__')]
+    key = keys_useful[0]
+    print(key)
+    data = file.get(key)
+    data = np.array(data).transpose()
+    print(data.shape)
+    return data
+
 
 class InferenceDataGenerator:
     def __init__(self, config):
@@ -12,20 +26,8 @@ class InferenceDataGenerator:
         inference_in_file = os.path.join(self.config.data_dir,self.config.inference_input)
         inference_out_file = os.path.join(self.config.data_dir,self.config.inference_target_output)
 
-        print('*** LOADING INFERENCE INPUT DATA ***')
-        inference_in_dict = mat73.loadmat(inference_in_file)
-        
-        print('*** LOADING INFERENCE OUTPUT DATA ***')
-        inference_out_dict = mat73.loadmat(inference_out_file)
-
-        inference_in_key = list(inference_in_dict.keys())[0]
-        inference_out_key = list(inference_out_dict.keys())[0]
-        
-        self.input = inference_in_dict[inference_in_key]
-        self.output = inference_out_dict[inference_out_key]
-        
-        self.input = np.transpose(inference_in_dict[inference_in_key])
-        self.output = np.transpose(inference_out_dict[inference_out_key])
+        self.input = load_mat(inference_in_file)
+        self.output = load_mat(inference_out_file)
 
         self.len = self.input.shape[0]
 

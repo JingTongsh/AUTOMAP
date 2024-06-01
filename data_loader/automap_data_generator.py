@@ -1,9 +1,22 @@
+import os
 import numpy as np
-import tensorflow as tf
+from scipy.io import loadmat
 import mat73
 
-import sys
-import os
+
+def load_mat(file):
+    try:
+        file = loadmat(file)
+    except:
+        file = mat73.loadmat(file)
+    keys = list(file.keys())
+    keys_useful = [key for key in keys if not key.startswith('__')]
+    key = keys_useful[0]
+    print(key)
+    data = file.get(key)
+    data = np.array(data).transpose()
+    return data
+
 
 class DataGenerator:
     def __init__(self, config):
@@ -12,21 +25,9 @@ class DataGenerator:
         train_in_file = os.path.join(self.config.data_dir,self.config.train_input)
         train_out_file = os.path.join(self.config.data_dir,self.config.train_output)
 
-        print('*** LOADING TRAINING INPUT DATA ***')
-        train_in_dict = mat73.loadmat(train_in_file)
+        self.input = load_mat(train_in_file)
+        self.output = load_mat(train_out_file)
         
-        print('*** LOADING TRAINING OUTPUT DATA ***')
-        train_out_dict = mat73.loadmat(train_out_file)
-
-        train_in_key = list(train_in_dict.keys())[0]
-        train_out_key = list(train_out_dict.keys())[0]
-        
-        self.input = train_in_dict[train_in_key]
-        self.output = train_out_dict[train_out_key]
-        
-        self.input = np.transpose(train_in_dict[train_in_key])
-        self.output = np.transpose(train_out_dict[train_out_key])
-
         self.len = self.input.shape[0]
         
        
@@ -41,20 +42,8 @@ class ValDataGenerator:
         test_in_file = os.path.join(self.config.data_dir, self.config.test_input)
         test_out_file = os.path.join(self.config.data_dir, self.config.test_output)
 
-        print('*** LOADING TESTING INPUT DATA ***')
-        test_in_dict = mat73.loadmat(test_in_file)
-
-        print('*** LOADING TESTING OUTPUT DATA ***')
-        test_out_dict = mat73.loadmat(test_out_file)
-
-        test_in_key = list(test_in_dict.keys())[0]
-        test_out_key = list(test_out_dict.keys())[0]
-
-        self.input = test_in_dict[test_in_key]
-        self.output = test_out_dict[test_out_key]
-        
-        self.input = np.transpose(test_in_dict[test_in_key])
-        self.output = np.transpose(test_out_dict[test_out_key])
+        self.input = load_mat(test_in_file)
+        self.output = load_mat(test_out_file)
 
         self.len = self.input.shape[0]
 

@@ -1,10 +1,10 @@
 {
-  "exp_name": "train",
+  "exp_name": "train64x64",
 
   "resume": 0,
   "loadmodel_dir": null,
 
-  "num_epochs": 20,
+  "num_epochs": 100,
   "batch_size": 100,
 
   "fc_input_dim": 8192,
@@ -15,9 +15,9 @@
   "im_w": 64,
   
   "data_dir": "data",
-  "train_input": "train_input.mat",
+  "train_input": "train_fft_input.mat",
   "train_output": "train_x_real.mat",
-  "test_input": "test_input.mat",
+  "test_input": "test_fft_input.mat",
   "test_output": "test_x_real.mat",
 
   "learning_rate": 0.00002
