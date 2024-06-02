@@ -1,3 +1,5 @@
+import os
+import shutil
 import tensorflow as tf
 
 from data_loader.automap_data_generator import DataGenerator, ValDataGenerator
@@ -5,7 +7,7 @@ from models.automap_model import AUTOMAP_Basic_Model
 from trainers.automap_trainer import AUTOMAP_Trainer
 from utils.config import process_config
 from utils.dirs import create_dirs
-from utils.utils import get_args
+from utils.args import get_args
 
 
 def main():
@@ -16,8 +18,10 @@ def main():
     except:
         print("missing or invalid arguments")
         exit(0)
-
+    
+    # copy config file
     create_dirs([config.summary_dir, config.checkpoint_dir])
+    shutil.copy(args.config, config.exp_dir)
     data = DataGenerator(config)
     valdata = ValDataGenerator(config)
 

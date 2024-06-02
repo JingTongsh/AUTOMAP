@@ -1,5 +1,5 @@
 {
-  "exp_name": "train128x128",
+  "exp_name": "train128x128-automap",
 
   "resume": 0,
   "loadmodel_dir": null,
@@ -14,11 +14,11 @@
   "im_h": 128,
   "im_w": 128,
   
-  "data_dir": "data_fft128/train",
-  "train_input": "x_input.mat",
-  "train_output": "x_real.mat",
-  "test_input": "../test/x_input.mat",
-  "test_output": "../test/x_real.mat",
+  "data_dir": "data-fft/automap_128/down_grid",
+  "train_input": "train_fft.mat",
+  "train_output": "train_x_real.mat",
+  "test_input": "test_fft.mat",
+  "test_output": "test_x_real.mat",
 
   "learning_rate": 0.00002
   

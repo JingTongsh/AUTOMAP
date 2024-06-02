@@ -1,11 +1,11 @@
 {
-  "exp_name": "train64x64",
+  "exp_name": "train64x64-automap",
 
   "resume": 0,
   "loadmodel_dir": null,
 
   "num_epochs": 100,
-  "batch_size": 100,
+  "batch_size": 32,
 
   "fc_input_dim": 8192,
   "fc_hidden_dim": 4096,
@@ -14,10 +14,10 @@
   "im_h": 64,
   "im_w": 64,
   
-  "data_dir": "data",
-  "train_input": "train_fft_input.mat",
+  "data_dir": "data-fft/automap_64/down_grid",
+  "train_input": "train_fft.mat",
   "train_output": "train_x_real.mat",
-  "test_input": "test_fft_input.mat",
+  "test_input": "test_fft.mat",
   "test_output": "test_x_real.mat",
 
   "learning_rate": 0.00002

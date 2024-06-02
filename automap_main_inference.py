@@ -7,7 +7,7 @@ from data_loader.automap_inference_data_generator import InferenceDataGenerator
 from trainers.automap_inferencer import AUTOMAP_Inferencer
 from utils.config import process_config
 from utils.dirs import create_dirs
-from utils.utils import get_args
+from utils.args import get_args
 
 
 def main():

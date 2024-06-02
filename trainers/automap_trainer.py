@@ -1,8 +1,7 @@
-import tqdm
+import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 import tensorflow as tf
-import pickle
-import sys
 import os
 import tensorboard
 
@@ -110,6 +109,15 @@ class AUTOMAP_Trainer:
             
             if (epoch + 1) % save_interval == 0:
                 self.model.save(os.path.join(self.config.checkpoint_dir, str(epoch)+'.h5'))
-
+        
         with open(self.config.graph_file, 'wb') as f:
             np.save(f, loss_training)
+        
+        # plot
+        fig = plt.figure()
+        plt.plot(loss_training[0], label='train')
+        plt.plot(loss_training[1], label='val')
+        plt.legend()
+        fig.savefig(os.path.join(self.config.summary_dir, 'loss.png'))
+        plt.close(fig)
+
