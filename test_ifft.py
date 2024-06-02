@@ -2,15 +2,19 @@ import numpy as np
 import torch
 import cv2
 import glob
-import glob
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from tqdm import tqdm
 import os
+import time
+from typing import Literal
 
 
 def get_mask(img, size, batch_size, type='gaussian2d', acc_factor=8, center_fraction=0.04, fix=False):
+    """
+    Get a mask for undersampling, implemented by Korean authors.
+    """
     mux_in = size ** 2
     if type.endswith('2d'):
         Nsamp = mux_in // acc_factor
@@ -103,62 +107,108 @@ def ifft2(x):
     return torch.fft.ifft2(torch.fft.ifftshift(x, dim=[-1, -2])).squeeze().numpy()
 
 
-def main():
+def read_our_images(size: int = 256):
     src_dir = 'MRI/test'
-    size = 64
-    mask_type = 'uniform1d'
-    # mask_type = 'gaussian1d'
-    # mask_type = 'uniformrandom2d'
-    # mask_type = 'gaussian2d'
-    # mask_type = 'grid'
-    import time
+    png_files = glob.glob(f'{src_dir}/*.png')
+    png_files.sort()
+    imgs = []
+    for png_file in png_files:
+        img = cv2.imread(png_file, cv2.IMREAD_GRAYSCALE)
+        img = cv2.resize(img, (size, size), interpolation=cv2.INTER_LINEAR)
+        imgs.append(img)
+    imgs = np.stack(imgs, axis=0)  # (N, H, W)
+    m1, m2 = imgs.min(), imgs.max()
+    imgs = (imgs - m1) / (m2 - m1)  # normalize to [0, 1]
+    return imgs
+
+
+def load_mat(file):
+    try:
+        from scipy.io import loadmat
+        file = loadmat(file)
+    except:
+        import mat73
+        file = mat73.loadmat(file)
+    keys = list(file.keys())
+    keys_useful = [key for key in keys if not key.startswith('__')]
+    key = keys_useful[0]
+    print(key)
+    data = file.get(key)
+    data = np.array(data).transpose()  # (H*W, N) -> (N, H*W)
+    return data
+
+
+def read_automap_images(size: int = 256):
+    src_file = 'data/test_x_real.mat'
+    data = load_mat(src_file)
+    w = int(np.sqrt(data.shape[1]))  # 64
+    data = data.reshape(-1, w, w)  # (N, 64, 64)
+
+    if size != w:
+        data_resized = []
+        for img in data:
+            img_resized = cv2.resize(img, (size, size), interpolation=cv2.INTER_LINEAR)
+            data_resized.append(img_resized)
+        data = np.stack(data_resized, axis=0)
+    
+    m1, m2 = data.min(), data.max()
+    data = (data - m1) / (m2 - m1)  # normalize to [0, 1]
+    return data
+
+
+def test_ifft(
+    which_data: Literal['ours', 'automap'],
+    mask_type: Literal['gaussian2d', 'uniformrandom2d', 'gaussian1d', 'uniform1d', 'customized'],
+    size: int = 256
+):
+    """
+    For two cases:
+    (1) images -> FFT -> kspace -> IFFT -> reconstructed images;
+    (2) images -> FFT -> kspace -> mask -> IFFT -> under-sampled reconstructed images;
+    visualize the results and compute PSNR and SSIM.
+    TODO: add noise to images or kspace.
+    """
     time_str = time.strftime('%Y%m%d-%H%M%S')
-    dst_fir = 'output/traditional-ifft-ourdata-{}-{}'.format(mask_type, time_str)
-    os.makedirs(dst_fir, exist_ok=True)
+    dst_dir = 'ifft-output/{}-{}-{}-{}'.format(which_data, size, mask_type, time_str)
+    vis_dir  = os.path.join(dst_dir, 'visualization')
+    os.makedirs(vis_dir, exist_ok=True)
+    metrics_file = os.path.join(dst_dir, 'metrics.txt')
+    print('Output directory:', dst_dir)
     
     full_psnr_list = []
     full_ssim_list = []
     uns_psnr_list = []
     uns_ssim_list = []
     
-    png_files = glob.glob(f'{src_dir}/*.png')
-    png_files.sort()
-    for png_file in tqdm(png_files):
-        img = cv2.imread(png_file, cv2.IMREAD_GRAYSCALE)
-        img = cv2.resize(img, (size, size), interpolation=cv2.INTER_LINEAR)
-        img_min, img_max = img.min(), img.max()
-        img = (img - img_min) / (img_max - img_min)
-        
+    all_imgs = read_our_images(size) if which_data == 'ours' else read_automap_images(size)
+    print('loaded all images:', all_imgs.shape)
+    
+    # the same mask for all fft results
+    if mask_type == 'customized':
+        mask = np.zeros((size, size))
+        mask[::2, ::2] = 1
+    else:
+        mask = torch.zeros(1, 1, size, size)
+        mask = get_mask(mask, size, 1, type=mask_type, acc_factor=2, center_fraction=0.15, fix=False).squeeze().numpy()
+    cv2.imwrite(f'{dst_dir}/mask.png', mask * 255)
+    print(f'mask shape {mask.shape}, sum: {mask.sum()}/{size**2}, saved as {dst_dir}/mask.png')
+    
+    num = all_imgs.shape[0]
+    for k, img in tqdm(enumerate(all_imgs), total=num):
         kspace = fft2(img)
-        # kspace = np.fft.fftshift(kspace)
         
         reconstruct = ifft2(kspace).real
-        # reconstruct = (reconstruct - reconstruct.min()) / (reconstruct.max() - reconstruct.min())
         psnr_full = psnr(img, reconstruct)
         ssim_full = ssim(img, reconstruct, data_range=reconstruct.max() - reconstruct.min())
         full_psnr_list.append(psnr_full)
         full_ssim_list.append(ssim_full)
         
-        # kspace_under = kspace * get_mask(torch.from_numpy(img).unsqueeze(0).unsqueeze(0), 256, 1, type=mask_type, acc_factor=2, center_fraction=0.15, fix=False)
-        # mask = np.zeros([256, 256])
-        # mask[::2] = 1
-        # scale = 4
-        # for i in range(mask.shape[0]):
-        #     for j in range(mask.shape[1]):
-        #         if i % scale == j % scale == 0:
-        #             mask[i, j] = 1
-        # mask = get_mask(torch.from_numpy(img).unsqueeze(0).unsqueeze(0), 256, 1, type=mask_type, acc_factor=2, center_fraction=0.15, fix=False).squeeze().numpy()
-        
-        mask = torch.zeros(1, 1, size, size)
-        mask = get_mask(mask, size, 1, type=mask_type, acc_factor=2, center_fraction=0.15, fix=False).squeeze().numpy()
-        print(mask.sum())
         kspace_under = kspace * mask
         
         reconstruct_under = ifft2(kspace_under).real
         h, w = img.shape
         # reconstruct_under = reconstruct_under[:h//scale, :w//scale]
         reconstruct_under = cv2.resize(reconstruct_under, (w, h), interpolation=cv2.INTER_LINEAR)
-        # reconstruct_under = (reconstruct_under - reconstruct_under.min()) / (reconstruct_under.max() - reconstruct_under.min())
         psnr_uns = psnr(img, reconstruct_under)
         ssim_uns = ssim(img, reconstruct_under, data_range=reconstruct_under.max() - reconstruct_under.min())
         uns_psnr_list.append(psnr_uns)
@@ -172,13 +222,35 @@ def main():
         axs[2].imshow(reconstruct_under, cmap='gray')
         axs[2].set_title('Reconstructed Under-sampled,\n PSNR: {:.2f},\n SSIM: {:.2f}'.format(psnr_uns, ssim_uns))
         
-        plt.savefig(f'{dst_fir}/{png_file.split("/")[-1]}')
+        plt.savefig(f'{vis_dir}/{k:04d}.png')
         plt.close()
     
-    print('Full PSNR: {:.2f}, SSIM: {:.2f}'.format(np.mean(full_psnr_list), np.mean(full_ssim_list)))
-    print('Under-sampled PSNR: {:.2f}, SSIM: {:.2f}'.format(np.mean(uns_psnr_list), np.mean(uns_ssim_list)))
-          
-        
+    full_psnr = np.mean(full_psnr_list)
+    full_ssim = np.mean(full_ssim_list)
+    uns_psnr = np.mean(uns_psnr_list)
+    uns_ssim = np.mean(uns_ssim_list)
+    
+    print('Full PSNR: {:.6f}, SSIM: {:.6f}'.format(full_psnr, full_ssim))
+    print('Under-sampled PSNR: {:.6f}, SSIM: {:.6f}'.format(uns_psnr, uns_ssim))
+    
+    with open(metrics_file, 'w') as f:
+        f.write(f'Full PSNR: {full_psnr}, SSIM: {full_ssim}\n')
+        f.write(f'Under-sampled PSNR: {uns_psnr}, SSIM: {uns_ssim}\n')
+    
+    return full_psnr, full_ssim, uns_psnr, uns_ssim
+
+
+def main():
+    f = open('ifft-output.txt', 'w')
+    for whilch_data in ['ours', 'automap']:
+        for mask_type in ['gaussian2d', 'uniformrandom2d', 'gaussian1d', 'uniform1d']:
+            for size in [64, 128, 256]:
+                full_psnr, full_ssim, uns_psnr, uns_ssim = test_ifft(whilch_data, mask_type, size)
+                f.write(f'{whilch_data}, {mask_type}, {size}\n')
+                f.write(f'Full PSNR: {full_psnr}, SSIM: {full_ssim}\n')
+                f.write(f'Under-sampled PSNR: {uns_psnr}, SSIM: {uns_ssim}\n')
+    f.close()
+
 
 if __name__ == '__main__':
     main()
