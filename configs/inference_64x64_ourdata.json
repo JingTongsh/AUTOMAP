@@ -1,7 +1,7 @@
 {
     "exp_name": "train",
   
-    "loadmodel_dir": "experiments/train64x64-ourdata-20240602-110803/checkpoint/99.h5",
+    "loadmodel_dir": "experiments/train64x64-ourdata-20240602-153100/checkpoint/99.h5",
   
     "num_epochs": 100,
     "batch_size": 100,
@@ -17,7 +17,7 @@
     "data_dir": "data-fft/ours_64/down_grid",
   "inference_input": "test_fft.mat",
   "inference_target_output": "test_x_real.mat",
-  "save_inference_output": "results-ours-64-grid/output.mat",
+  "save_inference_output": "results-ours-64-down_grid/output.mat",
   
     "learning_rate": 0.00002
   

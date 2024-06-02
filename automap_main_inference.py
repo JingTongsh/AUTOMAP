@@ -44,20 +44,27 @@ def main():
     output = output.reshape(-1, config.im_h, config.im_w)
     
     # metrics
+    psnr_ifft = psnr(img_gt, ifft)
+    ssim_ifft = ssim(img_gt, ifft, data_range=ifft.max() - ifft.min())
+    print('PSNR IFFT: ', psnr_ifft)
+    print('SSIM IFFT: ', ssim_ifft)
     psnr_output = psnr(img_gt, output)
     ssim_output = ssim(img_gt, output, data_range=output.max() - output.min())
-    print('PSNR: ', psnr_output)
-    print('SSIM: ', ssim_output)
+    print('PSNR AUTOMAP: ', psnr_output)
+    print('SSIM AUTOMAP: ', ssim_output)
     save_dir = os.path.dirname(config.save_inference_output)
     metrics_file = os.path.join(save_dir, 'metrics.txt')
     with open(metrics_file, 'w') as f:
-        f.write(f'PSNR: {psnr_output}\n')
-        f.write(f'SSIM: {ssim_output}\n')
+        f.write(f'PSNR IFFT: {psnr_ifft}\n')
+        f.write(f'SSIM IFFT: {ssim_ifft}\n')
+        f.write(f'PSNR AUTOMAP: {psnr_output}\n')
+        f.write(f'SSIM AUTOMAP: {ssim_output}\n')
     
     # visualize
     vis_dir = os.path.join(save_dir, 'visualization')
     os.makedirs(vis_dir, exist_ok=True)
     num = img_gt.shape[0]
+    print('visualizing results...')
     for i in tqdm(range(num)):
         img_gt_i = img_gt[i]
         ifft_i = ifft[i]

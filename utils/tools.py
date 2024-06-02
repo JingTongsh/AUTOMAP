@@ -94,6 +94,10 @@ def get_mask(img, size, batch_size, type='gaussian2d', acc_factor=8, center_frac
     elif type == 'grid':
         mask = torch.zeros_like(img)
         mask[..., ::2, ::2] = 1
+        # keep center
+        c_size = int(size * center_fraction)
+        c_from = size // 2 - c_size // 2
+        mask[..., c_from:c_from + c_size, c_from:c_from + c_size] = 1
     else:
         NotImplementedError(f'Mask type {type} is currently not supported.')
 

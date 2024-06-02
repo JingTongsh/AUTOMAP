@@ -63,8 +63,8 @@ def fft_from_images(
 
 
 def main():
-    for which_data in ['automap']:
-        for mask_type in ['uniform1d', 'grid', 'none']:
+    for which_data in ['automap', 'ours']:
+        for mask_type in ['grid']:
             for size in [64]:
                 save_dir = f'data-fft/{which_data}_{size}/down_{mask_type}'
                 fft_from_images(save_dir, which_data, mask_type, size, noise=False)
