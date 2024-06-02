@@ -45,14 +45,6 @@ class AUTOMAP_Inferencer:
         os.makedirs(save_dir,exist_ok=True)
         sio.savemat(self.config.save_inference_output, {'output_array':output_array.transpose()})  # (fc_output_dim, len) to be consistent with the input data
         
-        # visualze and save images
-        vis_dir = os.path.join(save_dir, 'visualization')
-        os.makedirs(vis_dir,exist_ok=True)
-        for ind, arr in enumerate(output_array):
-            arr = arr.reshape(self.config.im_h,self.config.im_h)
-            arr = (arr - np.min(arr))/(np.max(arr) - np.min(arr)) * 255
-            cv2.imwrite(os.path.join(vis_dir, f'{ind}.png'),arr)
-
         print('Inference Done')
         return output_array
             
