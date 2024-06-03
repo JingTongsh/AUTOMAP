@@ -23,8 +23,8 @@ class InferenceDataGenerator:
     def __init__(self, config):
         self.config = config
 
-        inference_in_file = os.path.join(self.config.data_dir,self.config.inference_input)
-        inference_out_file = os.path.join(self.config.data_dir,self.config.inference_target_output)
+        inference_in_file = os.path.join(self.config.data_dir, self.config.inference_input)
+        inference_out_file = os.path.join(self.config.data_dir, self.config.inference_target_output)
 
         self.input = load_mat(inference_in_file)
         self.output = load_mat(inference_out_file)

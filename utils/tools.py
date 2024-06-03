@@ -98,6 +98,8 @@ def get_mask(img, size, batch_size, type='gaussian2d', acc_factor=8, center_frac
         c_size = int(size * center_fraction)
         c_from = size // 2 - c_size // 2
         mask[..., c_from:c_from + c_size, c_from:c_from + c_size] = 1
+    elif type == 'none':
+        mask = torch.ones(size, size)
     else:
         NotImplementedError(f'Mask type {type} is currently not supported.')
 

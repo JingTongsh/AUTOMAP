@@ -1,8 +1,6 @@
-import glob
 import os
 import cv2
 import numpy as np
-from tqdm import tqdm
 
 from utils import *
 
@@ -63,9 +61,9 @@ def fft_from_images(
 
 
 def main():
-    for which_data in ['automap', 'ours']:
-        for mask_type in ['grid']:
-            for size in [64]:
+    for which_data in ['ours']:
+        for mask_type in ['grid', 'uniform1d', 'none']:
+            for size in [64, 128]:
                 save_dir = f'data-fft/{which_data}_{size}/down_{mask_type}'
                 fft_from_images(save_dir, which_data, mask_type, size, noise=False)
 

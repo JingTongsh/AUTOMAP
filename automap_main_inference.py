@@ -1,3 +1,4 @@
+import glob
 import os
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
@@ -55,10 +56,39 @@ def main():
     save_dir = os.path.dirname(config.save_inference_output)
     metrics_file = os.path.join(save_dir, 'metrics.txt')
     with open(metrics_file, 'w') as f:
+        f.write('Overall Metrics\n')
         f.write(f'PSNR IFFT: {psnr_ifft}\n')
         f.write(f'SSIM IFFT: {ssim_ifft}\n')
         f.write(f'PSNR AUTOMAP: {psnr_output}\n')
         f.write(f'SSIM AUTOMAP: {ssim_output}\n')
+    
+    if 'our' in config.data_dir:
+        # for our data, evaluate metrics for each sequence
+        print('Evaluating metrics for each sequence...')
+        original_dir = 'MRI/test'
+        png_files = glob.glob(f'{original_dir}/*.png')
+        png_files.sort()
+        id_list = ['_'.join(os.path.basename(file).split('_')[:2]) for file in png_files]
+        id_list = list(set(id_list))
+        id_list.sort()
+        
+        for i in id_list:
+            sequence_idx = [j for j, file in enumerate(png_files) if i in file]
+            sequence_gt = img_gt[sequence_idx]
+            sequence_ifft = ifft[sequence_idx]
+            sequence_output = output[sequence_idx]
+            sequence_psnr_ifft = psnr(sequence_gt, sequence_ifft)
+            sequence_ssim_ifft = ssim(sequence_gt, sequence_ifft, data_range=sequence_ifft.max() - sequence_ifft.min())
+            sequence_psnr_output = psnr(sequence_gt, sequence_output)
+            sequence_ssim_output = ssim(sequence_gt, sequence_output, data_range=sequence_output.max() - sequence_output.min())
+            with open(metrics_file, 'a') as f:
+                f.write('-' * 30 + '\n')
+                f.write(f'sequence: {i}\n')
+                f.write('-' * 30 + '\n')
+                f.write(f'PSNR IFFT: {sequence_psnr_ifft}\n')
+                f.write(f'SSIM IFFT: {sequence_ssim_ifft}\n')
+                f.write(f'PSNR AUTOMAP: {sequence_psnr_output}\n')
+                f.write(f'SSIM AUTOMAP: {sequence_ssim_output}\n')
     
     # visualize
     vis_dir = os.path.join(save_dir, 'visualization')
@@ -81,7 +111,6 @@ def main():
         axs[2].set_title(f'AUTOMAP Reconstruction,\n PSNR: {output_pnsr:.2f},\n SSIM: {output_ssim:.2f}')
         plt.savefig(f'{vis_dir}/{i:04d}.png')
         plt.close()
-
 
 
 if __name__ == '__main__':

@@ -15,7 +15,8 @@ from utils import *
 def test_ifft(
     which_data: Literal['ours', 'automap'],
     mask_type: Literal['gaussian2d', 'uniformrandom2d', 'gaussian1d', 'uniform1d', 'grid'],
-    size: int = 256
+    size: int = 256,
+    visualize: bool = False
 ):
     """
     For two cases:
@@ -26,15 +27,9 @@ def test_ifft(
     """
     time_str = time.strftime('%Y%m%d-%H%M%S')
     dst_dir = 'ifft-output/{}-{}-{}-{}'.format(which_data, size, mask_type, time_str)
-    vis_dir  = os.path.join(dst_dir, 'visualization')
-    os.makedirs(vis_dir, exist_ok=True)
     metrics_file = os.path.join(dst_dir, 'metrics.txt')
+    os.makedirs(dst_dir, exist_ok=True)
     print('Output directory:', dst_dir)
-    
-    full_psnr_list = []
-    full_ssim_list = []
-    uns_psnr_list = []
-    uns_ssim_list = []
     
     all_imgs = read_our_images(size=size) if which_data == 'ours' else read_automap_images(size=size)
     print('loaded all images:', all_imgs.shape)
@@ -45,58 +40,58 @@ def test_ifft(
     cv2.imwrite(f'{dst_dir}/mask.png', mask * 255)
     print(f'mask shape {mask.shape}, sum: {mask.sum()}/{size**2}, saved as {dst_dir}/mask.png')
     
-    num = all_imgs.shape[0]
-    for k, img in tqdm(enumerate(all_imgs), total=num):
-        kspace = fft2(img)
-        
-        reconstruct = ifft2(kspace).numpy().real
-        psnr_full = psnr(img, reconstruct)
-        ssim_full = ssim(img, reconstruct, data_range=reconstruct.max() - reconstruct.min())
-        full_psnr_list.append(psnr_full)
-        full_ssim_list.append(ssim_full)
-        
-        kspace_under = kspace * mask
-        
-        reconstruct_under = ifft2(kspace_under).numpy().real
-        h, w = img.shape
-        # reconstruct_under = reconstruct_under[:h//scale, :w//scale]
-        reconstruct_under = cv2.resize(reconstruct_under, (w, h), interpolation=cv2.INTER_LINEAR)
-        psnr_uns = psnr(img, reconstruct_under)
-        ssim_uns = ssim(img, reconstruct_under, data_range=reconstruct_under.max() - reconstruct_under.min())
-        uns_psnr_list.append(psnr_uns)
-        uns_ssim_list.append(ssim_uns)
-        
-        fig, axs = plt.subplots(1, 3)
-        axs[0].imshow(img, cmap='gray')
-        axs[0].set_title('Ground Truth')
-        axs[1].imshow(reconstruct, cmap='gray')
-        axs[1].set_title('Reconstructed,\n PSNR: {:.2f},\n SSIM: {:.2f}'.format(psnr_full, ssim_full))
-        axs[2].imshow(reconstruct_under, cmap='gray')
-        axs[2].set_title('Reconstructed Under-sampled,\n PSNR: {:.2f},\n SSIM: {:.2f}'.format(psnr_uns, ssim_uns))
-        
-        plt.savefig(f'{vis_dir}/{k:04d}.png')
-        plt.close()
+    kspace = fft2(all_imgs)
+    reconstruct = ifft2(kspace).numpy().real
+    psnr_full = psnr(all_imgs, reconstruct)
+    ssim_full = ssim(all_imgs, reconstruct, data_range=reconstruct.max() - reconstruct.min())
     
-    full_psnr = np.mean(full_psnr_list)
-    full_ssim = np.mean(full_ssim_list)
-    uns_psnr = np.mean(uns_psnr_list)
-    uns_ssim = np.mean(uns_ssim_list)
+    kspace_under = kspace * mask
+        
+    reconstruct_under = ifft2(kspace_under).numpy().real
+    h, w = reconstruct_under.shape[-2:]
+    # reconstruct_under = reconstruct_under[:h//scale, :w//scale]
+    psnr_uns = psnr(all_imgs, reconstruct_under)
+    ssim_uns = ssim(all_imgs, reconstruct_under, data_range=reconstruct_under.max() - reconstruct_under.min())
     
-    print('Full PSNR: {:.6f}, SSIM: {:.6f}'.format(full_psnr, full_ssim))
-    print('Under-sampled PSNR: {:.6f}, SSIM: {:.6f}'.format(uns_psnr, uns_ssim))
+    if visualize:
+        vis_dir  = os.path.join(dst_dir, 'visualization')
+        os.makedirs(vis_dir, exist_ok=True)
+        num = all_imgs.shape[0]
+        for k in range(num):
+            img = all_imgs[k]
+            reconstruct_k = reconstruct[k]
+            reconstruct_under_k = reconstruct_under[k]
+            fig, axs = plt.subplots(1, 3)
+            axs[0].imshow(img, cmap='gray')
+            axs[0].set_title('Ground Truth')
+            axs[1].imshow(reconstruct_k, cmap='gray')
+            axs[1].set_title('Reconstructed,\n PSNR: {:.2f},\n SSIM: {:.2f}'.format(psnr_full, ssim_full))
+            axs[2].imshow(reconstruct_under_k, cmap='gray')
+            axs[2].set_title('Reconstructed Under-sampled,\n PSNR: {:.2f},\n SSIM: {:.2f}'.format(psnr_uns, ssim_uns))
+            
+            plt.savefig(f'{vis_dir}/{k:04d}.png')
+            plt.close()
+    
+    
+    print('Full PSNR: {:.6f}, SSIM: {:.6f}'.format(psnr_full, ssim_full))
+    print('Under-sampled PSNR: {:.6f}, SSIM: {:.6f}'.format(psnr_uns, ssim_uns))
     
     with open(metrics_file, 'w') as f:
-        f.write(f'Full PSNR: {full_psnr}, SSIM: {full_ssim}\n')
-        f.write(f'Under-sampled PSNR: {uns_psnr}, SSIM: {uns_ssim}\n')
+        f.write(f'Full PSNR: {psnr_full}, SSIM: {ssim_full}\n')
+        f.write(f'Under-sampled PSNR: {psnr_uns}, SSIM: {ssim_uns}\n')
     
-    return full_psnr, full_ssim, uns_psnr, uns_ssim
+    return psnr_full, ssim_full, psnr_uns, ssim_uns
 
 
 def main():
     f = open('ifft-output.txt', 'a')
+    time_str = time.strftime('%Y%m%d-%H%M%S')
+    f.write('\n' + '-' * 30 + '\n')
+    f.write(f'Test IFFT on {time_str}\n')
+    f.write('\n' + '-' * 30 + '\n')
     for whilch_data in ['ours', 'automap']:
-        for mask_type in ['grid']:
-            for size in [64, 128, 256]:
+        for mask_type in ['grid', 'uniform1d', 'none']:
+            for size in [64, 128]:
                 full_psnr, full_ssim, uns_psnr, uns_ssim = test_ifft(whilch_data, mask_type, size)
                 f.write(f'{whilch_data}, {mask_type}, {size}\n')
                 f.write(f'Full PSNR: {full_psnr}, SSIM: {full_ssim}\n')
