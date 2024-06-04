@@ -46,11 +46,11 @@ def main():
     
     # metrics
     psnr_ifft = psnr(img_gt, ifft)
-    ssim_ifft = ssim(img_gt, ifft, data_range=ifft.max() - ifft.min())
+    ssim_ifft = ssim(img_gt, ifft, data_range=1)
     print('PSNR IFFT: ', psnr_ifft)
     print('SSIM IFFT: ', ssim_ifft)
     psnr_output = psnr(img_gt, output)
-    ssim_output = ssim(img_gt, output, data_range=output.max() - output.min())
+    ssim_output = ssim(img_gt, output, data_range=1)
     print('PSNR AUTOMAP: ', psnr_output)
     print('SSIM AUTOMAP: ', ssim_output)
     save_dir = os.path.dirname(config.save_inference_output)
@@ -78,9 +78,9 @@ def main():
             sequence_ifft = ifft[sequence_idx]
             sequence_output = output[sequence_idx]
             sequence_psnr_ifft = psnr(sequence_gt, sequence_ifft)
-            sequence_ssim_ifft = ssim(sequence_gt, sequence_ifft, data_range=sequence_ifft.max() - sequence_ifft.min())
+            sequence_ssim_ifft = ssim(sequence_gt, sequence_ifft, data_range=1)
             sequence_psnr_output = psnr(sequence_gt, sequence_output)
-            sequence_ssim_output = ssim(sequence_gt, sequence_output, data_range=sequence_output.max() - sequence_output.min())
+            sequence_ssim_output = ssim(sequence_gt, sequence_output, data_range=1)
             with open(metrics_file, 'a') as f:
                 f.write('-' * 30 + '\n')
                 f.write(f'sequence: {i}\n')
@@ -99,8 +99,8 @@ def main():
         img_gt_i = img_gt[i]
         ifft_i = ifft[i]
         output_i = output[i]
-        ifft_pnsr, ifft_ssim = psnr(img_gt_i, ifft_i), ssim(img_gt_i, ifft_i, data_range=ifft_i.max() - ifft_i.min())
-        output_pnsr, output_ssim = psnr(img_gt_i, output_i), ssim(img_gt_i, output_i, data_range=output_i.max() - output_i.min())
+        ifft_pnsr, ifft_ssim = psnr(img_gt_i, ifft_i), ssim(img_gt_i, ifft_i, data_range=1)
+        output_pnsr, output_ssim = psnr(img_gt_i, output_i), ssim(img_gt_i, output_i, data_range=1)
 
         fig, axs = plt.subplots(1, 3)
         axs[0].imshow(img_gt_i, cmap='gray')
@@ -111,6 +111,8 @@ def main():
         axs[2].set_title(f'AUTOMAP Reconstruction,\n PSNR: {output_pnsr:.2f},\n SSIM: {output_ssim:.2f}')
         plt.savefig(f'{vis_dir}/{i:04d}.png')
         plt.close()
+    
+    print(f'Inference results saved at {config.save_inference_output}')
 
 
 if __name__ == '__main__':

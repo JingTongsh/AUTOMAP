@@ -5,7 +5,7 @@
     "loadmodel_dir": null,
   
     "num_epochs": 100,
-    "batch_size": 4,
+    "batch_size": 1,
   
     "fc_input_dim": 32768,
     "fc_hidden_dim": 16384,
@@ -14,7 +14,7 @@
     "im_h": 128,
     "im_w": 128,
     
-    "data_dir": "data-fft/ours_128/down_grid",
+    "data_dir": "data-fft/ours_128/down_uniform1d",
     "train_input": "train_fft.mat",
     "train_output": "train_x_real.mat",
     "test_input": "test_fft.mat",

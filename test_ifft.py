@@ -43,7 +43,7 @@ def test_ifft(
     kspace = fft2(all_imgs)
     reconstruct = ifft2(kspace).numpy().real
     psnr_full = psnr(all_imgs, reconstruct)
-    ssim_full = ssim(all_imgs, reconstruct, data_range=reconstruct.max() - reconstruct.min())
+    ssim_full = ssim(all_imgs, reconstruct, data_range=1)
     
     kspace_under = kspace * mask
         
@@ -51,7 +51,7 @@ def test_ifft(
     h, w = reconstruct_under.shape[-2:]
     # reconstruct_under = reconstruct_under[:h//scale, :w//scale]
     psnr_uns = psnr(all_imgs, reconstruct_under)
-    ssim_uns = ssim(all_imgs, reconstruct_under, data_range=reconstruct_under.max() - reconstruct_under.min())
+    ssim_uns = ssim(all_imgs, reconstruct_under, data_range=1)
     
     if visualize:
         vis_dir  = os.path.join(dst_dir, 'visualization')

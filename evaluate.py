@@ -49,7 +49,7 @@ def main():
         con = con.reshape(w, w)
         ori, con = make01(ori), make01(con)
         psnr_list.append(psnr(ori, con))
-        ssim_list.append(ssim(ori, con, data_range=con.max() - con.min()))
+        ssim_list.append(ssim(ori, con, data_range=1))
 
     psnr_avg = np.mean(psnr_list)
     ssim_avg = np.mean(ssim_list)
@@ -73,9 +73,9 @@ def visualize(y_fft, x_gt, x_pred, save_file):
     x_ifft, x_gt, x_pred = make01(x_ifft), make01(x_gt), make01(x_pred)
     
     psnr_pred = psnr(x_gt, x_pred)
-    ssim_pred = ssim(x_gt, x_pred, data_range=x_pred.max() - x_pred.min())
+    ssim_pred = ssim(x_gt, x_pred, data_range=1)
     psnr_ifft = psnr(x_gt, x_ifft)
-    ssim_ifft = ssim(x_gt, x_ifft, data_range=x_ifft.max() - x_ifft.min())
+    ssim_ifft = ssim(x_gt, x_ifft, data_range=1)
     
     fig, axs = plt.subplots(1, 3)
     axs[0].imshow(x_ifft, cmap='gray')

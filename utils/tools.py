@@ -150,10 +150,7 @@ def load_mat(file: os.PathLike):
 
 def save_mat(file, data: np.ndarray):
     # to be consistent with the original data format, data should be (H*W, N)
-    try:
-        savemat(file, {'data': data})
-    except:
-        mat73.savemat(file, {'data': data})
+    savemat(file, {'data': data})
     print(f'saved data {data.shape} to {file}')
 
 

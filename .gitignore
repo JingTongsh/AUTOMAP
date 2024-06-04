@@ -17,3 +17,5 @@ korea.py
 *.txt
 *.tar.gz
 view*
+CT
+check_dicom.py

@@ -14,7 +14,7 @@
   "im_h": 64,
   "im_w": 64,
   
-  "data_dir": "data-fft/automap_64/down_uniform1d",
+  "data_dir": "data-fft/automap_64/down_grid",
   "train_input": "train_fft.mat",
   "train_output": "train_x_real.mat",
   "test_input": "test_fft.mat",

@@ -5,6 +5,8 @@ import numpy as np
 from utils import *
 
 
+
+
 def fft_from_images(
     save_dir: os.PathLike,
     which_data: Literal['ours', 'automap'],
@@ -61,9 +63,9 @@ def fft_from_images(
 
 
 def main():
-    for which_data in ['ours']:
-        for mask_type in ['grid', 'uniform1d', 'none']:
-            for size in [64, 128]:
+    for which_data in ['ours', 'automap']:
+        for mask_type in ['uniform1d']:
+            for size in [256]:
                 save_dir = f'data-fft/{which_data}_{size}/down_{mask_type}'
                 fft_from_images(save_dir, which_data, mask_type, size, noise=False)
 

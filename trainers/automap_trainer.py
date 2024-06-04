@@ -120,4 +120,6 @@ class AUTOMAP_Trainer:
         plt.legend()
         fig.savefig(os.path.join(self.config.summary_dir, 'loss.png'))
         plt.close(fig)
+        
+        print(f'Training finished, checkpoint saved at {self.config.checkpoint_dir}, summary saved at {self.config.summary_dir}')
 
