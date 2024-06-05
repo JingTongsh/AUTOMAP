@@ -13,9 +13,9 @@
   "im_h": 128,
   "im_w": 128,
 
-  "data_dir": "data_mri/test",
-  "inference_input": "x_input.mat",
-  "inference_target_output": "x_real.mat",
+  "data_dir": "data-transfer-test",
+  "inference_input": "test_fft.mat",
+  "inference_target_output": "test_x_real.mat",
   "save_inference_output": "results/128.mat",
 
   "learning_rate": 0.00002

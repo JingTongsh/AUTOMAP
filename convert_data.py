@@ -63,7 +63,7 @@ def fft_from_images(
 
 
 def fft_from_out_test_images_given_mask(mask: np.ndarray, size: int = 256):
-    save_dir = f'data-expanded'
+    save_dir = f'data-transfer-test'
     os.makedirs(save_dir, exist_ok=True)
     real_test_images = read_our_images(size=size, split='test')
     fft = fft2(real_test_images).numpy()
@@ -95,7 +95,7 @@ def main():
 
 
 def main_expanded():
-    mask_file = 'data-fft/ours_64/down_uniform1d/mask.png'
+    mask_file = 'data-fft/automap_64/down_uniform1d/mask.png'
     mask = load_mask_from_png(mask_file, size=64)
     fft_from_out_test_images_given_mask(mask, size=64)
     
