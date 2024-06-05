@@ -62,6 +62,30 @@ def fft_from_images(
         save_mat(save_file, fft_concat)
 
 
+def fft_from_out_test_images_given_mask(mask: np.ndarray, size: int = 256):
+    save_dir = f'data-expanded'
+    os.makedirs(save_dir, exist_ok=True)
+    real_test_images = read_our_images(size=size, split='test')
+    fft = fft2(real_test_images).numpy()
+    fft *= mask
+    print(f'under-sampled: {fft.shape}')
+    real_test_images = real_test_images.reshape(-1, size*size).transpose()  # (size*size, num) to be consistent with the original data
+    save_file = os.path.join(save_dir, f'test_x_real.mat')
+    save_mat(save_file, real_test_images)
+    fft = fft.reshape(-1, size*size).transpose()  # (size*size, num)
+    real_part, imag_part = np.real(fft), np.imag(fft)
+    fft_concat = np.concatenate([real_part, imag_part], axis=0)  # (2*size*size, num) to be consistent with the original data
+    save_file = os.path.join(save_dir, f'test_fft.mat')
+    save_mat(save_file, fft_concat)
+
+
+def load_mask_from_png(mask_file: os.PathLike, size: int = 256):
+    mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
+    mask = cv2.resize(mask, (size, size), interpolation=cv2.INTER_LINEAR)
+    mask = mask / 255
+    return mask
+
+
 def main():
     for which_data in ['ours', 'automap']:
         for mask_type in ['uniform1d']:
@@ -70,5 +94,11 @@ def main():
                 fft_from_images(save_dir, which_data, mask_type, size, noise=False)
 
 
+def main_expanded():
+    mask_file = 'data-fft/ours_64/down_uniform1d/mask.png'
+    mask = load_mask_from_png(mask_file, size=64)
+    fft_from_out_test_images_given_mask(mask, size=64)
+    
+
 if __name__ == '__main__':
-    main()
+    main_expanded()

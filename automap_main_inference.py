@@ -62,7 +62,7 @@ def main():
         f.write(f'PSNR AUTOMAP: {psnr_output}\n')
         f.write(f'SSIM AUTOMAP: {ssim_output}\n')
     
-    if 'our' in config.data_dir:
+    if 'our' in config.data_dir or 'expanded' in config.data_dir:
         # for our data, evaluate metrics for each sequence
         print('Evaluating metrics for each sequence...')
         original_dir = 'MRI/test'
@@ -89,6 +89,12 @@ def main():
                 f.write(f'SSIM IFFT: {sequence_ssim_ifft}\n')
                 f.write(f'PSNR AUTOMAP: {sequence_psnr_output}\n')
                 f.write(f'SSIM AUTOMAP: {sequence_ssim_output}\n')
+            print(f'sequence: {i}')
+            print(f'PSNR IFFT: {sequence_psnr_ifft}')
+            print(f'SSIM IFFT: {sequence_ssim_ifft}')
+            print(f'PSNR AUTOMAP: {sequence_psnr_output}')
+            print(f'SSIM AUTOMAP: {sequence_ssim_output}')
+            
     
     # visualize
     vis_dir = os.path.join(save_dir, 'visualization')
