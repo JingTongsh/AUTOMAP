@@ -5,7 +5,7 @@
     "loadmodel_dir": null,
   
     "num_epochs": 100,
-    "batch_size": 1,
+    "batch_size": 8,
   
     "fc_input_dim": 32768,
     "fc_hidden_dim": 16384,
