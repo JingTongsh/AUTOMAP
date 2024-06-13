@@ -1,7 +1,7 @@
 {
     "exp_name": "train",
   
-    "loadmodel_dir": "experiments/train64x64-automap-20240603-163542/checkpoint/99.h5",
+    "loadmodel_dir": "experiments/train64x64-ourdata-20240604-000424/checkpoint/99.h5",
   
     "num_epochs": 100,
     "batch_size": 100,
@@ -14,7 +14,7 @@
     "im_w": 64,
   
   
-    "data_dir": "data-transfer-test",
+    "data_dir": "data-fft/ours_64/down_uniform1d",
   "inference_input": "test_fft.mat",
   "inference_target_output": "test_x_real.mat",
   "save_inference_output": "results-transfer-64-down_uniform1d/output.mat",

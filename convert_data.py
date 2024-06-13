@@ -89,7 +89,7 @@ def load_mask_from_png(mask_file: os.PathLike, size: int = 256):
 def main():
     for which_data in ['ours', 'automap']:
         for mask_type in ['uniform1d']:
-            for size in [256]:
+            for size in [64, 128]:
                 save_dir = f'data-fft/{which_data}_{size}/down_{mask_type}'
                 fft_from_images(save_dir, which_data, mask_type, size, noise=False)
 
@@ -101,4 +101,4 @@ def main_expanded():
     
 
 if __name__ == '__main__':
-    main_expanded()
+    main()

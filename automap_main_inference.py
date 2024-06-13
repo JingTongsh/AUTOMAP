@@ -62,7 +62,7 @@ def main():
         f.write(f'PSNR AUTOMAP: {psnr_output}\n')
         f.write(f'SSIM AUTOMAP: {ssim_output}\n')
     
-    if  in config.data_dir or 'expanded' in config.data_dir or 'transfer' in config.data_dir:
+    if 'expanded' in config.data_dir or 'transfer' in config.data_dir:
         # for our data, evaluate metrics for each sequence
         print('Evaluating metrics for each sequence...')
         original_dir = 'MRI/test'
